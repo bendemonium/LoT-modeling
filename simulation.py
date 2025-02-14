@@ -81,6 +81,7 @@ class StringGenerator:
             
 
 def plot_simulation(metrics):
+    
     sns.set(style="whitegrid")
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
     fig.suptitle("Metric Distributions", fontsize=16)
@@ -91,21 +92,23 @@ def plot_simulation(metrics):
     for i, (metric, title) in enumerate(zip([metric1, metric2, metric3, metric4], titles)):
         ax = axes[i // 2, i % 2]
 
-        if i < 2:  # Top two plots (discrete bins)
+        if i < 2:  # Top two plots (discrete bins, integer x-ticks from 0 to len_seq)
             sns.histplot(metric, discrete=True, bins=int(max(metric) - min(metric) + 1), ax=ax)
+            ax.set_xticks(range(0, len_seq + 1))  # X-ticks from 0 to len_seq
         else:  # Bottom two plots (len_seq bins)
             sns.histplot(metric, bins=len_seq, ax=ax)
 
         ax.set_title(title, fontsize=14)
         ax.set_xlabel("Value", fontsize=12)
+        ax.set_ylim(0, 120000)  # Set y-limits
 
         # Display count on top of each bar
         for patch in ax.patches:
             height = patch.get_height()
-            ax.annotate(f'{int(height)}', 
-                        (patch.get_x() + patch.get_width() / 2., height),
-                        ha='center', va='center', fontsize=10, color='black', xytext=(0, 5), textcoords='offset points')
+            if height > 0:
+                ax.annotate(f'{int(height)}', 
+                            (patch.get_x() + patch.get_width() / 2., height),
+                            ha='center', va='center', fontsize=10, color='black', xytext=(0, 5), textcoords='offset points')
 
     plt.tight_layout(rect=[0, 0, 1, 0.96])
     plt.show()
-
