@@ -72,7 +72,7 @@ class StringGenerator:
 
             # Store the results as attributes of the instance
             self.levenshtein = np.array(all_levenshtein)
-            self.similarity = self.levenshtein / len_seq
+            self.similarity = 1 - (self.levenshtein / len_seq)
             self.lcs = np.array(all_lcs)
             self.lcs_len = np.array(all_lcs_length)
             self.lcs_len_norm = self.lcs_len / len_seq
