@@ -1,3 +1,4 @@
 .virtual_documents
 __pycache__
 dumpyard.ipynb
+.ipynb_checkpoints
