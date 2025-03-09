@@ -57,7 +57,8 @@ class StringGenerator:
 
             self.levenshtein, self.lcs, self.lcs_len, self.n_unique = self.run_simulation()
             self.similarity = 1 - (self.levenshtein / self.parent.len_seq)
-            self.p_unique = self.n_unique / (self.n_seq * self.parent.len_seq)
+            self.p_unique = self.n_unique 
+            # / (self.n_seq * self.parent.len_seq)
         
         def metrics(self):
             return (

@@ -1,0 +1,5 @@
+numpy
+Levenshtein
+seaborn
+matplotlib
+pandas

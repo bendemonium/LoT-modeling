@@ -2,3 +2,4 @@
 __pycache__
 dumpyard.ipynb
 .ipynb_checkpoints
+.env
