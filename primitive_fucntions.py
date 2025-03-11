@@ -111,7 +111,7 @@ def sample(set1):
     Time complexity: O(1) for non-empty sets"""
     if not set1:
         return None
-    return random.sample(set1, 1)[0]
+    return random.sample(tuple(set1), 1)[0]
 
 # Function calls with memoization
 
