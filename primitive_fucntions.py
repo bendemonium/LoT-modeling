@@ -12,26 +12,6 @@ def pair(L, C):
     else:
         return L + C       # O(n) for strings due to immutability
 
-def first(L):
-    """Return the first character of L
-    Time complexity: O(1)"""
-    if not L:
-        return '' if isinstance(L, str) else None
-    return L[0]
-
-def rest(L):
-    """Return everything except the first character of L
-    Time complexity: O(n) due to copying"""
-    if not L:
-        return L
-    return L[1:]
-
-def insert(X, Y):
-    """Insert list X into the middle of Y
-    Time complexity: O(n+m) where n=len(X), m=len(Y)"""
-    mid = len(Y) // 2
-    return Y[:mid] + X + Y[mid:]
-
 def append(X, Y):
     """Append lists X and Y
     Time complexity: O(n+m) where n=len(X), m=len(Y)"""
@@ -49,16 +29,10 @@ def equals(X, Y):
     Time complexity: O(1) to O(n) depending on content"""
     return X == Y
 
-def empty(X):
-    """True if string X is empty; otherwise, false
-    Time complexity: O(1)"""
-    return len(X) == 0
-
 def if_func(B, X, Y):
     """Return X if B else return Y (X and Y may be lists, sets, or probabilities)
     Time complexity: O(1)"""
     return X if B else Y
-
 # Standard Boolean connectives (all O(1))
 
 def and_func(A, B):
@@ -99,12 +73,11 @@ def setminus(set1, s):
     """Remove a string from a set
     Time complexity: O(1) for single item, O(len(s)) for set s"""
     if isinstance(s, set):
-        return set1 - s
+        set1 - s
     else:
         result = set(set1)
         if s in result:
             result.remove(s)
-        return result
 
 def sample(set1):
     """Sample from a set of strings
@@ -150,22 +123,18 @@ def remove(T, list):
         result.remove(T)
     return result
 
-def write_tokens():
-    """Prints out a sequential list of tokens 'A1 - A2 - B3 - B4'
-    Time complexity: O(n) where n is number of tokens"""
-    tokens = create_tokens()
-    return " - ".join(tokens)
-
-def check_IFsame_type(A1, A2):
-    """Returns YES or NO if tokens are same type
+def check_if_same_type(e1, e2, bias):
+    """Returns True if tokens are same type
     Time complexity: O(1)"""
-    return "YES" if A1[0] == A2[0] else "NO"
+    return getattr(e1,bias) == getattr(e2,bias)
 
-def write_random(type="A"):
-    """Prints out one unused member of particular type
+def write_random(S, bias, type):
+    """Returns one unused member of particular type
     Time complexity: O(n) to filter tokens"""
-    tokens = [t for t in create_tokens() if t.startswith(type)]
-    return random.choice(tokens) if tokens else None
+    for element in S:
+        if getattr(element, bias) == type:
+            return element
+    pass
 
 def implement(FUN, N):
     """Keeps implementing a function N times
@@ -175,16 +144,14 @@ def implement(FUN, N):
         results.append(FUN())
     return results
 
-def repeat(FUN):
-    """Repeat a function once
-    Time complexity: Same as FUN"""
-    return FUN()
-
-def write_all(type="A"):
-    """Prints a sequential list of all members of a type
+def write_all(S, bias, type):
+    """Returns a sequential list of all members of a type
     Time complexity: O(n) where n is number of tokens"""
-    tokens = [t for t in create_tokens() if t.startswith(type)]
-    return " - ".join(tokens)
+    result = []
+    for element in S:
+        if getattr(element, bias) == type:
+            result = pair(result, element)
+    return result
 
 def repeat_write_random(type="A"):
     """Repeat write_random function
