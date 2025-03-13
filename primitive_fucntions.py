@@ -5,12 +5,7 @@ import random
 def pair(L, C):
     """Concatenates character C onto list L
     Time complexity: O(1) amortized for lists, O(n) for strings"""
-    if isinstance(L, list):
-        result = L.copy()  # O(n) for the copy
-        result.append(C)   # O(1) amortized
-        return result
-    else:
-        return L + C       # O(n) for strings due to immutability
+    L.append(C)   # O(1) amortized
 
 def append(X, Y):
     """Append lists X and Y
@@ -72,12 +67,7 @@ def union(set1, set2):
 def setminus(set1, s):
     """Remove a string from a set
     Time complexity: O(1) for single item, O(len(s)) for set s"""
-    if isinstance(s, set):
-        set1 - s
-    else:
-        result = set(set1)
-        if s in result:
-            result.remove(s)
+    set1.remove(s)
 
 def sample(set1):
     """Sample from a set of strings
@@ -152,11 +142,6 @@ def write_all(S, bias, type):
         if getattr(element, bias) == type:
             result = pair(result, element)
     return result
-
-def repeat_write_random(type="A"):
-    """Repeat write_random function
-    Time complexity: O(n) same as write_random"""
-    return write_random(type)
 
 # Additional functions
 
