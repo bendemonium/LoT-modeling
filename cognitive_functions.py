@@ -82,17 +82,20 @@ def seriate(S, associations: dict):
     stopwatch = Stopwatch()
     # --- #
     stopwatch.start()
+    chunks = []
     result = []
     while (len(S) > 0):
         element = pf.sample(S)
         if element in associations.keys():
-            pf.pair(result, element)
+            chunk = []
+            pf.pair(chunk, element)
             pf.setminus(S, element)
             while True:
                 next_element = pf.sample(S)
                 if next_element == associations[element]:
-                    pf.pair(result, next_element)
+                    pf.pair(chunk, next_element)
                     pf.setminus(S, next_element)
+                    pf.pair(chunks, chunk)
                     break
                 else:
                     continue
@@ -107,14 +110,54 @@ def seriate(S, associations: dict):
 # 2-D
 
 def serial_crossed(S):
-    
-    return
+    n = len(S) // 2 # number of elements in the basis
+    stopwatch = Stopwatch()
+    bias = find_bias(S, stopwatch, higher_dim=True)
+    result = []
+    while len(S) > n:
+        element = pf.sample(S)
+        if len(result) == 0 or pf.check_if_same_type(element, result[-1], bias[0]):
+            pf.pair(result, element)
+            pf.setminus(S, element)
+    for _ in range(n):
+        element = pf.write_random(S, bias[1], getattr(result[_], bias[1]))
+        pf.pair(result, element)
+        pf.setminus(S, element)
+    time_elapsed = stopwatch.get_elapsed_time()
+    return (result, time_elapsed)
 
 def center_embedded(S):
-    return
+    n = len(S) // 2 # number of elements in the basis
+    stopwatch = Stopwatch()
+    bias = find_bias(S, stopwatch, higher_dim=True)
+    result = []
+    while len(S) > 0:
+        element = pf.sample(S)
+        if len(result) == 0 or pf.check_if_same_type(element, result[-1], bias[0]):
+            pf.pair(result, element)
+            pf.setminus(S, element)
+    for _ in range(n):
+        element = pf.write_random(S, bias[1], getattr(result[n - 1 - _], bias[1]))
+        pf.pair(result, element)
+        pf.setminus(S, element)
+    stopwatch.stop()
+    time_elapsed = stopwatch.get_elapsed_time()
+    return (result, time_elapsed)
 
 def tail_recursive(S):
-    return
+    stopwatch = Stopwatch()
+    bias = find_bias(S, stopwatch, two_flag=True, higher_dim=True)
+    stopwatch.start()
+    result = []
+    while len(S) > 0:
+        element = pf.sample(S)
+        pf.setminus(S, element)
+        paired_element = pf.write_random(S, bias[0], getattr(element, bias[0]))
+        result = pf.append(result, pf.merge(element, paired_element))
+        pf.setminus(S, paired_element)
+    stopwatch.stop()
+    time_elapsed = stopwatch.get_elapsed_time()
+    return (result, time_elapsed)
 
 
 # ---------------------------------------------------------------------#
@@ -129,17 +172,21 @@ def find_bias(S,clock,two_flag=False,higher_dim=False):
     Input Arguments:
         S: set of elements to be experimented with
         clock: stopwatch used to time primitive functions
+        two_flag: flag to indicate if the bias required needs only two attribute types
+        higher_dim: flag to indicate if the set of elements is 2-dimensional
 
     Output:
         bias: the bias lol, the attribute the flip selected
     """
     if higher_dim == True:
-        cluster_bias, serial_bias = None, None
+        chunk_bias, serial_bias = None, None
         attribute_counts = {attr: len(set(getattr(obj, attr) for obj in S)) 
                     for attr in ["attribute1", "attribute2"]}
-        ### add code here
-        return cluster_bias, serial_bias
-        pass
+        chunk_bias = find_bias(S, clock, two_flag)
+        clock.start()
+        serial_bias = 'attribute1' if chunk_bias == 'attribute2' else 'attribute2'
+        clock.stop()
+        return (chunk_bias, serial_bias)
     else:
         bias = None
         attribute_counts = {attr: len(set(getattr(obj, attr) for obj in S)) 

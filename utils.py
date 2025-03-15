@@ -1,10 +1,18 @@
 import time
+from operator import attrgetter
+from tabulate import tabulate
 
 class Element: # n-dimensional element
-    def __init__(self, attribute1, attribute2=None):
+    def __init__(self, name, attribute1, attribute2=None):
+        self.name = name
         self.attribute1 = attribute1
         self.attribute2 = attribute2
 
+def pretty_view(sequence):
+    """Prints a sequence of elements in a pretty format."""
+    cute = list(zip(*map(attrgetter("name", "attribute1", "attribute2"), sequence)))
+    # Print as a table
+    print(tabulate(zip(*cute), headers=["object", "attribute 1", "attribute 2"], tablefmt="grid"))
 
 class Stopwatch:
     def __init__(self):
