@@ -1,5 +1,7 @@
 import random
 
+SEED = 42
+random.seed(SEED)
 # Functions on lists (strings)
 
 def pair(L, C):

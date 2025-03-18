@@ -9,6 +9,9 @@ import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 
+SEED = 42
+random.seed(SEED)
+
 class StringGenerator:
 
     def __init__(self, symbol_sets, len_seq, n_seq=6, n_rounds=1000):
