@@ -1,41 +1,52 @@
 import primitive_fucntions as pf
 from collections import defaultdict
-from utils import Stopwatch
-
+from utils import Stopwatch, Element, ElementSet, Associations
+ 
 # 1-D
 
-def iterate(S):
+def iterate(S: ElementSet):     # 112233    
+
     # preprocessing (not part of measured cognitive process)
-    n = len(S) # number of elements in the set
+    n = len(S.elements) # number of elements in the set
     chunks = defaultdict(list) 
     stopwatch = Stopwatch()
     # --- #
     # select attribute which chunking is based on
-    bias = find_bias(S, stopwatch)
-    stopwatch.start()
-    for _ in range(n):
-        element = pf.sample(S) # select an element in the set
-        sorter = getattr(element, bias)
-        chunks[sorter].append(element)
-        pf.setminus(S, element)
-    stopwatch.stop()
-    n = len(chunks) # reassign n
-    chunks = {tuple(v) for k, v in chunks.items()}
-    stopwatch.start()
-    result = []
-    for _ in range(n):
-        chunk = pf.sample(chunks)
-        stopwatch.stop()
-        temp = list(chunk)
-        stopwatch.start()
-        pf.append(result, temp)
-        pf.setminus(chunks, chunk)
-    stopwatch.stop()
-    time_elapsed = stopwatch.get_elapsed_time()
+
+    ### ADD CODE HERE
+    """ graph algo here"""
+    bias = find_bias(S.elements, stopwatch)
+    for _ in range(n//2):
+        element = pf.sample(S)
+
+
+    """ non graph algo here"""
+    # bias = find_bias(S, stopwatch)
+    # stopwatch.start()
+    # for _ in range(n):
+    #     element = pf.sample(S) # select an element in the set
+    #     sorter = getattr(element, bias)
+    #     chunks[sorter].append(element)
+    #     pf.setminus(S, element)
+    # stopwatch.stop()
+    # n = len(chunks) # reassign n
+    # chunks = {tuple(v) for k, v in chunks.items()}
+    # stopwatch.start()
+    # result = []
+    # for _ in range(n):
+    #     chunk = pf.sample(chunks)
+    #     stopwatch.stop()
+    #     temp = list(chunk)
+    #     stopwatch.start()
+    #     pf.append(result, temp)
+    #     pf.setminus(chunks, chunk)
+    # stopwatch.stop()
+    # time_elapsed = stopwatch.get_elapsed_time()
 
     return (result, time_elapsed)
 
 def palindrome(S):
+    # 123321
     # preprocessing (not part of measured cognitive process)
     n = len(S) // 2 # number of elements in basis
     stopwatch = Stopwatch()
@@ -43,7 +54,8 @@ def palindrome(S):
     bias = find_bias(S, stopwatch)
     stopwatch.start()
     basis, rev = [], []
-
+    # write_random() based implementation
+    ### WRITE CODE HERE
     while (len(S) > n):
         element = pf.sample(S)
         if len(basis)==0 or not (any(pf.check_if_same_type(element, chosen, bias) for chosen in basis)):
@@ -60,11 +72,16 @@ def palindrome(S):
     return (result, time_elapsed)      
 
 def alternate(S):
+    # 121212
     # preprocessing (not part of measured cognitive process)
     n = len(S) # number of elements in the set
     stopwatch = Stopwatch()
     # --- #
     # select attribute which chunking is based on
+    ### ADD CODE HERE
+    ### subject knows what types of attributes are there
+    ### and what type of attribute to select
+
     bias = find_bias(S,stopwatch,two_flag=True)
     result = []
     while (len(S) > 0):
@@ -76,7 +93,7 @@ def alternate(S):
 
     return (result, time_elapsed)
 
-def seriate(S, associations: dict):
+def chaining(S, associations: dict):
     # preprocessing (not part of measured cognitive process)
     n = len(S) # number of elements in the set
     stopwatch = Stopwatch()
@@ -106,8 +123,11 @@ def seriate(S, associations: dict):
 
     return  (result, time_elapsed)
 
+def seriate(S):
+    #  123123
+    pass
 
-# 2-D
+# -------- 2-D -------- #
 
 def serial_crossed(S):
     n = len(S) // 2 # number of elements in the basis
@@ -128,6 +148,7 @@ def serial_crossed(S):
 
 def center_embedded(S):
     n = len(S) // 2 # number of elements in the basis
+    # 
     stopwatch = Stopwatch()
     bias = find_bias(S, stopwatch, higher_dim=True)
     result = []

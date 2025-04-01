@@ -33,34 +33,40 @@ def setminus(set1, s):
     Time complexity: O(1) for single item, O(len(s)) for set s"""
     set1.remove(s)
 
-def sample(set1):
-    """Sample from a set of strings
-    Time complexity: O(1) for non-empty sets"""
-    if not set1:
+def sample(collection):
+    """Sample from a set or list of strings.
+    Time complexity: O(1) for non-empty sets if using random.choice,
+    O(n) for lists using random.sample.
+    """
+    if not collection:
         return None
-    return random.sample(tuple(set1), 1)[0]
+    
+    if isinstance(collection, set):
+        collection = tuple(collection)  # Convert to tuple for sampling
 
-# Function calls with memoization
+    return random.sample(collection, 1)[0]
 
-memoization_cache = {}
-def F(z):
-    """Generic factor function
-    Time complexity: Depends on implementation"""
-    pass
+# # Function calls with memoization
 
-def Fm(z):
-    """Memoized version of factor function
-    Time complexity: O(1) for repeated calls"""
-    if z not in memoization_cache:
-        memoization_cache[z] = F(z)
-    return memoization_cache[z]
+# memoization_cache = {}
+# def F(z):
+#     """Generic factor function
+#     Time complexity: Depends on implementation"""
+#     pass
+
+# def Fm(z):
+#     """Memoized version of factor function
+#     Time complexity: O(1) for repeated calls"""
+#     if z not in memoization_cache:
+#         memoization_cache[z] = F(z)
+#     return memoization_cache[z]
 
 # Token-related functions
 
-def create_tokens():
-    """Initiates a list of tokens [A1, A2, B3, B4]
-    Time complexity: O(1)"""
-    return ["A1", "A2", "B3", "B4"]
+# def create_tokens():
+#     """Initiates a list of tokens [A1, A2, B3, B4]
+#     Time complexity: O(1)"""
+#     return ["A1", "A2", "B3", "B4"]
 
 def add(T, list):
     """Adds token T to a list
@@ -82,17 +88,18 @@ def check_if_same_type(e1, e2, bias):
     Time complexity: O(1)"""
     return getattr(e1,bias) == getattr(e2,bias)
 
-def write_random(S, bias, type): 
+def write_random(G, bias, type): 
     """Returns one unused member of particular type
     Time complexity: O(n) to filter tokens"""
-    for element in S:
-        if getattr(element, bias) == type:
-            return element
-        
+    # for element in S:
+    #     if getattr(element, bias) == type:
+    #         return element
+    type_elements = [u for u, v, d in G.edges(data=True) if v == type and d["label"] == bias]
+       
         ### WRITE CODE
         ### maybe add a random list shuffling thing here
         ### to make it less predictable
-
+    
     pass
 
 def implement(FUN, N):
