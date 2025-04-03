@@ -46,6 +46,8 @@ class ElementSet: # n-dimensional element set
                 G.add_edge(obj.name, obj.attribute2, label="attribute")
         if  self.associations:
             self.associations.build_updates(G)  # Build associations
+        if self.graph:
+            self.graph = G
         return G
     def visualize(self):
         plt.figure(figsize=(10, 8))
