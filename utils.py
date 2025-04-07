@@ -1,4 +1,4 @@
-from functools import cached_property
+from functools import cached_property, cache, partial
 import time
 from operator import attrgetter
 from tabulate import tabulate
@@ -6,28 +6,26 @@ import networkx as nx
 from typing import Literal
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from abc import ABC, abstractmethod
+import primitive_fucntions as pf
 
 # ---------------------------------------------------------------------#
 
 @dataclass
 class Element: # n-dimensional element
-    def __init__(self, name, attribute1, attribute2=None):
-        name = name
-        attribute1 = attribute1
-        attribute2 = attribute2
+    name : str
+    attribute1 : int | float | str
+    attribute2 : int | float | str | None = None
     def __repr__(self): 
         return f"Element(object={self.name}, attribute 1={self.attribute1}, attribute 2={self.attribute2})"
     def __str__(self):
         return f"{self.name}, {self.attribute1}, {self.attribute2})"
 
+@dataclass
 class  Associations: # n-dimensional association
-    def __init__(self, associations: dict, positional = False):
-        self.associations = associations
-        self.positional = positional
-    @abstractmethod
+    associations: dict
+    positional: bool = False
     def __repr__(self):
-        ...
+        raise NotImplementedError
     def build_updates(self, graph):
         if self.positional:
             for key, value in self.associations.items():
@@ -41,6 +39,8 @@ class ElementSet: # n-dimensional element set
         self.elements = elements
         self.associations = associations
         self.graph = self.build_graph()
+    def __repr__(self):
+        raise NotImplementedError
     def build_graph(self):
         G = nx.MultiGraph()  # Create a directed graph
         for obj in self.elements:
@@ -74,8 +74,21 @@ class ElementSet: # n-dimensional element set
         edge_labels = nx.get_edge_attributes(self.graph, 'label')
         nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels)
         plt.show()
-    def __repr__(self):
-        raise NotImplementedError
+    @cached_property
+    def attribute1_types(self):
+        """Returns a set of unique attribute1 types."""
+        return set(obj.attribute1 for obj in self.elements)
+    @cached_property
+    def attribute2_types(self):
+        """Returns a set of unique attribute2 types."""
+        return set(obj.attribute2 for obj in self.elements if obj.attribute2 is not None)
+    def attribute_items(self, attribute):
+        def get_type(type_):
+            
+            return getattr(self, f"{attribute}_types", set())
+
+    
+    
 
 
 def pretty_view(sequence):
@@ -83,8 +96,6 @@ def pretty_view(sequence):
     cute = list(zip(*map(attrgetter("name", "attribute1", "attribute2"), sequence)))
     # Print as a table
     print(tabulate(zip(*cute), headers=["object", "attribute 1", "attribute 2"], tablefmt="grid"))
-
-
 
 
 
