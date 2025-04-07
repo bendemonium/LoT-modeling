@@ -1,15 +1,21 @@
+from functools import cached_property
 import time
 from operator import attrgetter
 from tabulate import tabulate
 import networkx as nx
 from typing import Literal
 import matplotlib.pyplot as plt
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
+# ---------------------------------------------------------------------#
+
+@dataclass
 class Element: # n-dimensional element
     def __init__(self, name, attribute1, attribute2=None):
-        self.name = name
-        self.attribute1 = attribute1
-        self.attribute2 = attribute2
+        name = name
+        attribute1 = attribute1
+        attribute2 = attribute2
     def __repr__(self): 
         return f"Element(object={self.name}, attribute 1={self.attribute1}, attribute 2={self.attribute2})"
     def __str__(self):
@@ -19,8 +25,9 @@ class  Associations: # n-dimensional association
     def __init__(self, associations: dict, positional = False):
         self.associations = associations
         self.positional = positional
+    @abstractmethod
     def __repr__(self):
-        pass
+        ...
     def build_updates(self, graph):
         if self.positional:
             for key, value in self.associations.items():
@@ -68,7 +75,7 @@ class ElementSet: # n-dimensional element set
         nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels)
         plt.show()
     def __repr__(self):
-        pass
+        raise NotImplementedError
 
 
 def pretty_view(sequence):
