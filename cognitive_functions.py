@@ -18,30 +18,32 @@ def iterate(S: ElementSet):     # 112233
     bias = find_bias(S.elements, stopwatch)
     for _ in range(n//2):
         element = pf.sample(S)
+    result = None
+    time_elapsed = None
 
 
     # """ non graph algo here"""
-    # bias = find_bias(S, stopwatch)
-    # stopwatch.start()
-    # for _ in range(n):
-    #     element = pf.sample(S) # select an element in the set
-    #     sorter = getattr(element, bias)
-    #     chunks[sorter].append(element)
-    #     pf.setminus(S, element)
-    # stopwatch.stop()
-    # n = len(chunks) # reassign n
-    # chunks = {tuple(v) for k, v in chunks.items()}
-    # stopwatch.start()
-    # result = []
-    # for _ in range(n):
-    #     chunk = pf.sample(chunks)
-    #     stopwatch.stop()
-    #     temp = list(chunk)
-    #     stopwatch.start()
-    #     pf.append(result, temp)
-    #     pf.setminus(chunks, chunk)
-    # stopwatch.stop()
-    # time_elapsed = stopwatch.get_elapsed_time()
+    bias = find_bias(S, stopwatch)
+    stopwatch.start()
+    for _ in range(n):
+        element = pf.sample(S) # select an element in the set
+        sorter = getattr(element, bias)
+        chunks[sorter].append(element)
+        pf.setminus(S, element)
+    stopwatch.stop()
+    n = len(chunks) # reassign n
+    chunks = {tuple(v) for k, v in chunks.items()}
+    stopwatch.start()
+    result = []
+    for _ in range(n):
+        chunk = pf.sample(chunks)
+        stopwatch.stop()
+        temp = list(chunk)
+        stopwatch.start()
+        pf.append(result, temp)
+        pf.setminus(chunks, chunk)
+    stopwatch.stop()
+    time_elapsed = stopwatch.get_elapsed_time()
 
     return (result, time_elapsed)
 
