@@ -7,6 +7,7 @@ from typing import Literal
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 import primitive_fucntions as pf
+import importlib
 
 # ---------------------------------------------------------------------#
 
@@ -133,3 +134,36 @@ class Stopwatch:
         if self._running:
             return time.perf_counter() - self._start_time
         return self._elapsed_time
+
+class KComplexity:
+    def __init__(self):
+        self.prim = importlib.import_module('primitive_fucntions')
+        self.call_counts = {}
+        self._wrap_prim_functions()
+
+    def _wrap_prim_functions(self):
+        for name in dir(self.prim):
+            func = getattr(self.prim, name)
+            if callable(func) and not name.startswith("__"):
+                self.call_counts[name] = 0
+                wrapper_func = self._make_wrapper(func, name)
+                setattr(self.prim, name, wrapper_func)
+
+    def _make_wrapper(self, func, name):
+        def wrapper(*args, **kwargs):
+            self.call_counts[name] += 1
+            return func(*args, **kwargs)
+        return wrapper
+    
+    """get dictionary of each prim function call count"""
+    def get_prim_counts(self):
+        return dict(self.call_counts)
+    
+    """get total number of prim function calls"""
+    def get_k_complexity(self):
+        return sum(self.call_counts.values())
+    
+    """reset all prim function call counts to zero"""
+    def reset(self):
+        for key in self.call_counts:
+            self.call_counts[key] = 0
