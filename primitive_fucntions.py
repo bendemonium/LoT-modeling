@@ -114,9 +114,10 @@ def write_all(S, bias, type):
     """Returns a sequential list of all members of a type
     Time complexity: O(n) where n is number of tokens"""
     result = []
-    for element in S:
-        if getattr(element, bias) == type:
-            result = pair(result, element)
+    #for element in S:
+        #if getattr(element, bias) == type:
+            #result = pair(result, element)
+    type_elements = [u for u, v, d in S.edges(data=True) if v == type and d["label"] == bias]
     return result
 
 # Additional functions
