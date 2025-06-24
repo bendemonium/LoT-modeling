@@ -11,11 +11,23 @@ import importlib
 
 # ---------------------------------------------------------------------#
 
+"""
 @dataclass
 class Element: # n-dimensional element
     name : str
     attribute1 : int | float | str
     attribute2 : int | float | str | None = None
+    def __repr__(self): 
+        return f"Element(object={self.name}, attribute 1={self.attribute1}, attribute 2={self.attribute2})"
+    def __str__(self):
+        return f"{self.name}, {self.attribute1}, {self.attribute2})"
+"""
+
+class Element: # n-dimensional element
+    def __init__(self, name, attribute1, attribute2=None):
+        self.name = name
+        self.attribute1 = attribute1
+        self.attribute2 = attribute2
     def __repr__(self): 
         return f"Element(object={self.name}, attribute 1={self.attribute1}, attribute 2={self.attribute2})"
     def __str__(self):
@@ -54,8 +66,8 @@ class ElementSet: # n-dimensional element set
                 G.add_edge(obj.name, obj.attribute2, label="attribute")
         if  self.associations:
             self.associations.build_updates(G)  # Build associations
-        if self.graph:
-            self.graph = G
+            if self.graph:
+                self.graph = G
         return G
     def visualize(self):
         plt.figure(figsize=(10, 8))
