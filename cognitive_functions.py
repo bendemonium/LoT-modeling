@@ -1,225 +1,201 @@
 import primitive_fucntions as pf
 from collections import defaultdict
-from utils import Stopwatch, Element, ElementSet, Associations
- 
-# 1-D
+from utils import Stopwatch, ElementSet, Associations
 
-def iterate(S: ElementSet):     # 112233    
+# --- Cognitive Functions using Graph Node Structure --- #
 
-    # preprocessing (not part of measured cognitive process)
-    n = len(S.elements) # number of elements in the set
-    chunks = defaultdict(list) 
+def iterate(S: ElementSet):
+    n = len(S.elements)
+    chunks = defaultdict(list)
     stopwatch = Stopwatch()
-    # --- #
-    # select attribute which chunking is based on
 
-    ### ADD CODE HERE
-    """ graph algo here"""
-    bias = find_bias(S.elements, stopwatch)
-    for _ in range(n//2):
-        element = pf.sample(S)
-    result = None
-    time_elapsed = None
+    bias = find_bias(S, stopwatch)
+    for _ in range(n // 2):
+        element = pf.sample(S.elements)
 
-
-    # """ non graph algo here"""
     bias = find_bias(S, stopwatch)
     stopwatch.start()
     for _ in range(n):
-        element = pf.sample(S) # select an element in the set
+        element = pf.sample(S.elements)
         sorter = getattr(element, bias)
         chunks[sorter].append(element)
-        pf.setminus(S, element)
+        pf.setminus(S.elements, element)
     stopwatch.stop()
-    n = len(chunks) # reassign n
-    chunks = {tuple(v) for k, v in chunks.items()}
+
+    chunks = {tuple(v) for v in chunks.values()}
     stopwatch.start()
     result = []
-    for _ in range(n):
+    for _ in range(len(chunks)):
         chunk = pf.sample(chunks)
         stopwatch.stop()
         temp = list(chunk)
         stopwatch.start()
-        pf.append(result, temp)
+        result = pf.append(result, temp)
         pf.setminus(chunks, chunk)
     stopwatch.stop()
     time_elapsed = stopwatch.get_elapsed_time()
-
     return (result, time_elapsed)
 
-def palindrome(S):
-    # 123321
-    # preprocessing (not part of measured cognitive process)
-    n = len(S) // 2 # number of elements in basis
+def palindrome(S: ElementSet):
+    n = len(S.elements) // 2
     stopwatch = Stopwatch()
-    # select attribute which chunking is based on
     bias = find_bias(S, stopwatch)
     stopwatch.start()
     basis, rev = [], []
-    # write_random() based implementation
-    ### WRITE CODE HERE
-    while (len(S) > n):
-        element = pf.sample(S)
-        if len(basis)==0 or not (any(pf.check_if_same_type(element, chosen, bias) for chosen in basis)):
+
+    while len(S.elements) > n:
+        element = pf.sample(S.elements)
+        if len(basis) == 0 or not any(pf.check_if_same_type(element, chosen, bias) for chosen in basis):
             pf.pair(basis, element)
-            pf.setminus(S, element)
-    for _ in range(n):
-        element = pf.write_random(S, bias, getattr(basis[n-1-_], bias))
-        pf.pair(rev,element)
-        pf.setminus(S, element)
-    result = pf.append(basis,rev)
+            pf.setminus(S.elements, element)
+
+    for i in range(n):
+        target_type = getattr(basis[n - 1 - i], bias)
+        candidates = [u for u, v, d in S.graph.edges(data=True) if v == target_type and d['label'] == bias and u in S.elements]
+        if candidates:
+            element = pf.sample(candidates)
+            pf.pair(rev, element)
+            pf.setminus(S.elements, element)
+
+    result = pf.append(basis, rev)
     stopwatch.stop()
-    time_elapsed = stopwatch.get_elapsed_time()
-    
-    return (result, time_elapsed)      
+    return (result, stopwatch.get_elapsed_time())
 
-def alternate(S):
-    # 121212
-    # preprocessing (not part of measured cognitive process)
-    n = len(S) # number of elements in the set
+def alternate(S: ElementSet):
     stopwatch = Stopwatch()
-    # --- #
-    # select attribute which chunking is based on
-    ### ADD CODE HERE
-    ### subject knows what types of attributes are there
-    ### and what type of attribute to select
-
-    bias = find_bias(S,stopwatch,two_flag=True)
+    bias = find_bias(S, stopwatch, two_flag=True)
     result = []
-    while (len(S) > 0):
-        element = pf.sample(S)
+
+    while len(S.elements) > 0:
+        element = pf.sample(S.elements)
         if len(result) == 0 or not pf.check_if_same_type(element, result[-1], bias):
-            pf.pair(result, element)    
-            pf.setminus(S, element)
-    time_elapsed = stopwatch.get_elapsed_time()
+            pf.pair(result, element)
+            pf.setminus(S.elements, element)
 
-    return (result, time_elapsed)
+    return (result, stopwatch.get_elapsed_time())
 
-def chaining(S, associations: dict):
-    # preprocessing (not part of measured cognitive process)
-    n = len(S) # number of elements in the set
+def chaining(S: ElementSet, associations: Associations):
     stopwatch = Stopwatch()
-    # --- #
     stopwatch.start()
     chunks = []
     result = []
-    while (len(S) > 0):
-        element = pf.sample(S)
-        if element in associations.keys():
+
+    while len(S.elements) > 0:
+        element = pf.sample(S.elements)
+        if element in associations.associations:
             chunk = []
             pf.pair(chunk, element)
-            pf.setminus(S, element)
+            pf.setminus(S.elements, element)
+
             while True:
-                next_element = pf.sample(S)
-                if next_element == associations[element]:
+                next_element = pf.sample(S.elements)
+                if next_element == associations.associations[element]:
                     pf.pair(chunk, next_element)
-                    pf.setminus(S, next_element)
+                    pf.setminus(S.elements, next_element)
                     pf.pair(chunks, chunk)
                     break
-                else:
-                    continue
-        else:
-            continue
+
+    result = chunks
     stopwatch.stop()
-    time_elapsed = stopwatch.get_elapsed_time()
+    return (result, stopwatch.get_elapsed_time())
 
-    return  (result, time_elapsed)
-
-def seriate(S):
+def seriate(S: ElementSet):
     #  123123
     pass
 
-# -------- 2-D -------- #
-
-def serial_crossed(S):
-    n = len(S) // 2 # number of elements in the basis
+def serial_crossed(S: ElementSet):
+    n = len(S.elements) // 2
     stopwatch = Stopwatch()
     bias = find_bias(S, stopwatch, higher_dim=True)
     result = []
-    while len(S) > n:
-        element = pf.sample(S)
+
+    while len(S.elements) > n:
+        element = pf.sample(S.elements)
         if len(result) == 0 or pf.check_if_same_type(element, result[-1], bias[0]):
             pf.pair(result, element)
-            pf.setminus(S, element)
-    for _ in range(n):
-        element = pf.write_random(S, bias[1], getattr(result[_], bias[1]))
-        pf.pair(result, element)
-        pf.setminus(S, element)
-    time_elapsed = stopwatch.get_elapsed_time()
-    return (result, time_elapsed)
+            pf.setminus(S.elements, element)
 
-def center_embedded(S):
-    n = len(S) // 2 # number of elements in the basis
-    # 
+    for i in range(n):
+        target_type = getattr(result[i], bias[1])
+        candidates = [u for u, v, d in S.graph.edges(data=True) if v == target_type and d['label'] == bias[1] and u in S.elements]
+        if candidates:
+            element = pf.sample(candidates)
+            pf.pair(result, element)
+            pf.setminus(S.elements, element)
+
+    return (result, stopwatch.get_elapsed_time())
+
+def center_embedded(S: ElementSet):
+    n = len(S.elements) // 2
     stopwatch = Stopwatch()
     bias = find_bias(S, stopwatch, higher_dim=True)
     result = []
-    while len(S) > 0:
-        element = pf.sample(S)
+
+    while len(S.elements) > 0:
+        element = pf.sample(S.elements)
         if len(result) == 0 or pf.check_if_same_type(element, result[-1], bias[0]):
             pf.pair(result, element)
-            pf.setminus(S, element)
-    for _ in range(n):
-        element = pf.write_random(S, bias[1], getattr(result[n - 1 - _], bias[1]))
-        pf.pair(result, element)
-        pf.setminus(S, element)
+            pf.setminus(S.elements, element)
+        if len(result) == n:
+            break
+
+    for i in range(n):
+        target_type = getattr(result[n - 1 - i], bias[1])
+        candidates = [u for u, v, d in S.graph.edges(data=True) if v == target_type and d['label'] == bias[1] and u in S.elements]
+        if candidates:
+            element = pf.sample(candidates)
+            pf.pair(result, element)
+            pf.setminus(S.elements, element)
+
     stopwatch.stop()
-    time_elapsed = stopwatch.get_elapsed_time()
-    return (result, time_elapsed)
+    return (result, stopwatch.get_elapsed_time())
 
-def tail_recursive(S):
+def tail_recursive(S: ElementSet):
     stopwatch = Stopwatch()
     bias = find_bias(S, stopwatch, two_flag=True, higher_dim=True)
     stopwatch.start()
     result = []
-    while len(S) > 0:
-        element = pf.sample(S)
-        pf.setminus(S, element)
-        paired_element = pf.write_random(S, bias[0], getattr(element, bias[0]))
-        result = pf.append(result, pf.merge(element, paired_element))
-        pf.setminus(S, paired_element)
+
+    while len(S.elements) > 0:
+        element = pf.sample(S.elements)
+        pf.setminus(S.elements, element)
+        target_type = getattr(element, bias[0])
+        candidates = [u for u, v, d in S.graph.edges(data=True) if v == target_type and d['label'] == bias[0] and u in S.elements]
+        if candidates:
+            paired_element = pf.sample(candidates)
+            result = pf.append(result, pf.merge(element, paired_element))
+            pf.setminus(S.elements, paired_element)
+
     stopwatch.stop()
-    time_elapsed = stopwatch.get_elapsed_time()
-    return (result, time_elapsed)
+    return (result, stopwatch.get_elapsed_time())
 
+def find_bias(S, clock, two_flag=False, higher_dim=False):
+    if isinstance(S, ElementSet):
+        elements = S.elements
+    else:
+        elements = S
 
-# ---------------------------------------------------------------------#
-
-# utils
-
-def find_bias(S,clock,two_flag=False,higher_dim=False):
-    """
-    Count unique values for both attributes, 
-    select the attribute with exactly 2 types while the other has != 2 types
-
-    Input Arguments:
-        S: set of elements to be experimented with
-        clock: stopwatch used to time primitive functions
-        two_flag: flag to indicate if the bias required needs only two attribute types
-        higher_dim: flag to indicate if the set of elements is 2-dimensional
-
-    Output:
-        bias: the bias lol, the attribute the flip selected
-    """
-    if higher_dim == True:
-        chunk_bias, serial_bias = None, None
-        attribute_counts = {attr: len(set(getattr(obj, attr) for obj in S)) 
-                    for attr in ["attribute1", "attribute2"]}
-        chunk_bias = find_bias(S, clock, two_flag)
+    if higher_dim:
+        attribute_counts = {
+            attr: len(set(getattr(obj, attr) for obj in elements))
+            for attr in ["attribute1", "attribute2"]
+        }
+        chunk_bias = find_bias(elements, clock, two_flag)
         clock.start()
         serial_bias = 'attribute1' if chunk_bias == 'attribute2' else 'attribute2'
         clock.stop()
         return (chunk_bias, serial_bias)
     else:
-        bias = None
-        attribute_counts = {attr: len(set(getattr(obj, attr) for obj in S)) 
-                    for attr in ["attribute1", "attribute2"]}
+        attribute_counts = {
+            attr: len(set(getattr(obj, attr) for obj in elements))
+            for attr in ["attribute1", "attribute2"]
+        }
         if attribute_counts["attribute1"] == 2 and attribute_counts["attribute2"] != 2:
-            bias = "attribute1" if not two_flag else "attribute1"
+            return "attribute1"
         elif attribute_counts["attribute2"] == 2 and attribute_counts["attribute1"] != 2:
-            bias = "attribute2" if not two_flag else "attribute1"
+            return "attribute2"
         else:
             clock.start()
-            bias = "attribute1" if pf.flip(0.5) else "attribute2"  # Default random selection
+            bias = "attribute1" if pf.flip(0.5) else "attribute2"
             clock.stop()
-        return bias
+            return bias

@@ -6,7 +6,7 @@ import networkx as nx
 from typing import Literal
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-import primitive_fucntions as pf
+import oldpf as pf
 import importlib
 
 # ---------------------------------------------------------------------#
@@ -33,10 +33,10 @@ class Element: # n-dimensional element
     def __str__(self):
         return f"{self.name}, {self.attribute1}, {self.attribute2})"
 
-@dataclass
 class  Associations: # n-dimensional association
-    associations: dict
-    positional: bool = False
+    def __init__(self, associations: dict, positional: bool = False):
+        self.associations = associations
+        self.positional = positional
     def __repr__(self):
         raise NotImplementedError
     def build_updates(self, graph):
@@ -46,7 +46,6 @@ class  Associations: # n-dimensional association
         else:
             for key, value in self.associations.items():
                 graph.add_edge(key.name, value.name, label="precedes", directed=True)
-
 
 class ElementSet: # n-dimensional element set
     def __init__(self, elements: set, associations: Associations = None):
@@ -67,7 +66,7 @@ class ElementSet: # n-dimensional element set
                 G.add_edge(obj.name, obj.attribute2, label="attribute")
         if  self.associations:
             self.associations.build_updates(G)  # Build associations
-            if hasattr(self, 'graph') and self.graph:
+            if self.graph:
                 self.graph = G
         return G
     def visualize(self):
@@ -150,7 +149,7 @@ class Stopwatch:
 
 class KComplexity:
     def __init__(self):
-        self.prim = importlib.import_module('primitive_fucntions')
+        self.prim = importlib.import_module('oldpf')
         self.call_counts = {}
         self._wrap_prim_functions()
 

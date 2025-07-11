@@ -28,11 +28,33 @@ def flip(p):
 #     Time complexity: O(len(set1) + len(set2))"""
 #     return set1 | set2
 
-
+"""
 def setminus(set1, s):
     #Remove a string from a set
     #Time complexity: O(1) for single item, O(len(s)) for set s
     set1.remove(s)
+"""
+
+def setminus(set1, s):
+    """
+    Removes element `s` from `set1`, which may be a set, list, or ElementSet.
+    Time complexity:
+        - O(1) for sets and ElementSet
+        - O(n) for lists
+    """
+    if hasattr(set1, "elements"):  # ElementSet
+        try:
+            set1.elements.remove(s)
+            set1.graph = set1.build_graph()  # Sync graph with element change
+        except KeyError:
+            pass  # Already removed or not found
+    elif isinstance(set1, set) or isinstance(set1, list):
+        set1.remove(s)
+    else:
+        raise TypeError(f"setminus does not support type: {type(set1)}")
+
+
+"""
 
 def sample(collection):
     #Sample from a set or list of strings.
@@ -43,6 +65,31 @@ def sample(collection):
     
     if isinstance(collection, set):
         collection = tuple(collection)  # Convert to tuple for sampling
+
+    return random.sample(collection, 1)[0]
+
+"""
+
+def sample(collection):
+    """
+    Samples a single Element from an ElementSet or a collection of Elements.
+    
+    Args:
+        collection: An ElementSet, set, list, or tuple of Element objects.
+
+    Returns:
+        A single randomly selected Element.
+    """
+    if not collection:
+        return None
+
+    # Handle ElementSet
+    if hasattr(collection, 'elements'):
+        collection = collection.elements
+
+    # Make sure it's a sequence
+    if isinstance(collection, set):
+        collection = tuple(collection)
 
     return random.sample(collection, 1)[0]
 
@@ -89,22 +136,38 @@ def check_if_same_type(e1, e2, bias):
     Time complexity: O(1)"""
     return getattr(e1,bias) == getattr(e2,bias)
 
+"""
 
-
-def write_random(S, bias, type): 
+def write_random(G, bias, type): 
     #Returns one unused member of particular type
     #Time complexity: O(n) to filter tokens
-    for element in S:
-        if getattr(element, bias) == type:
-            return element
-    #type_elements = [u for u, v, d in G.edges(data=True) if v == type and d["label"] == bias]
+    # for element in S:
+    #     if getattr(element, bias) == type:
+    #         return element
+    type_elements = [u for u, v, d in G.edges(data=True) if v == type and d["label"] == bias]
        
         ### WRITE CODE
         ### maybe add a random list shuffling thing here
         ### to make it less predictable
     
     pass
+"""
 
+def write_random(S, bias, type):
+    """
+    Returns a random element from S that matches a given bias and type.
+    Works whether S is an ElementSet or raw graph.
+    """
+    G = S.graph if hasattr(S, "graph") else S  # Unwrap ElementSet if needed
+
+    type_elements = [u for u, v, d in G.edges(data=True) if v == type and d["label"] == bias]
+    if not type_elements:
+        return None
+
+    element_name = random.choice(type_elements)
+    for obj in S.elements if hasattr(S, "elements") else S:
+        if getattr(obj, bias) == type and obj.name == element_name:
+            return obj
 
     
 def implement(FUN, N):

@@ -6,7 +6,7 @@ import networkx as nx
 from typing import Literal
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-import primitive_fucntions as pf
+import midpf as pf
 import importlib
 
 # ---------------------------------------------------------------------#
@@ -150,7 +150,7 @@ class Stopwatch:
 
 class KComplexity:
     def __init__(self):
-        self.prim = importlib.import_module('primitive_fucntions')
+        self.prim = importlib.import_module('midpf')
         self.call_counts = {}
         self._wrap_prim_functions()
 
