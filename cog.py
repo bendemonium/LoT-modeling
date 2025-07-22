@@ -18,4 +18,32 @@ def cog_1(E):
 kc = KComplexity()
 cog_1(Elements)
 print(kc.get_k_complexity())
-print(kc.get_prim_counts())
+#print(kc.get_prim_counts())
+
+'''
+element_set = {a,b,c,d}
+S = ElementSet(element_set)
+kc = KComplexity()
+cf.iterate(S)
+print(kc.get_cog_name() + ' k-complexity: ', kc.get_k_complexity())
+print(kc.get_cog_name() + ' primitive count: ', kc.get_prim_counts())
+print('Total K-complexity: ', kc.get_total_k_complexity())
+print('Total primitive counts: ', kc.get_total_prim_counts())
+
+kc.plot_prim_counts()
+kc.plot_total_prim_counts()
+kc.plot_cog_vs_prim()
+
+element_set = {a,b,c,d}
+S = ElementSet(element_set)
+cf.palindrome(S)
+print(kc.get_cog_name() + ' k-complexity: ', kc.get_k_complexity())
+print(kc.get_cog_name() + ' primitive count: ', kc.get_prim_counts())
+print('Total K-complexity: ', kc.get_total_k_complexity())
+print('Total primitive counts: ', kc.get_total_prim_counts())
+
+
+kc.plot_prim_counts()
+kc.plot_total_prim_counts()
+kc.plot_cog_vs_prim()
+'''

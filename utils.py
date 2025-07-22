@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 import primitive_fucntions as pf
 import importlib
+import copy
+from collections import defaultdict
+import numpy as np
 
 # ---------------------------------------------------------------------#
 
@@ -151,32 +154,119 @@ class Stopwatch:
 class KComplexity:
     def __init__(self):
         self.prim = importlib.import_module('primitive_fucntions')
+        self.cog = importlib.import_module('cognitive_functions')
         self.call_counts = {}
+        self.total_calls = {}
+        self.cog_func_calls = defaultdict(list)
         self._wrap_prim_functions()
+        self._wrap_cog_functions()
+        self.current_cog_name = None
 
     def _wrap_prim_functions(self):
         for name in dir(self.prim):
             func = getattr(self.prim, name)
             if callable(func) and not name.startswith("__"):
                 self.call_counts[name] = 0
-                wrapper_func = self._make_wrapper(func, name)
-                setattr(self.prim, name, wrapper_func)
+                self.total_calls[name] = 0
+                wrapper_func = self._make_prim_wrapper(func, name)
+                setattr(self.prim, name, self._make_prim_wrapper(func, name))
 
-    def _make_wrapper(self, func, name):
+    def _wrap_cog_functions(self):
+        for name in dir(self.cog):
+            if name.startswith("__") or name == "find_bias":
+                continue
+            func = getattr(self.cog, name)
+            if callable(func):
+                setattr(self.cog, name, self._make_cog_wrapper(func, name))
+
+    def _make_prim_wrapper(self, func, name):
         def wrapper(*args, **kwargs):
             self.call_counts[name] += 1
+            self.total_calls[name] += 1
             return func(*args, **kwargs)
         return wrapper
+
+    def _make_cog_wrapper(self, func, name):
+        def wrapper(*args, **kwargs):
+            self.reset() 
+            result = func(*args, **kwargs)
+            self.cog_func_calls[name].append(copy.deepcopy(self.call_counts))
+            self.current_cog_name = name
+            return result
+        return wrapper
     
-    """get dictionary of each prim function call count"""
+    def get_cog_name(self):
+        return self.current_cog_name
+
     def get_prim_counts(self):
         return dict(self.call_counts)
     
-    """get total number of prim function calls"""
+    def get_total_prim_counts(self):
+        return dict(self.total_calls)
+
     def get_k_complexity(self):
         return sum(self.call_counts.values())
     
-    """reset all prim function call counts to zero"""
+    def get_total_k_complexity(self):
+        return sum(self.total_calls.values())
+
     def reset(self):
         for key in self.call_counts:
             self.call_counts[key] = 0
+
+    def plot_prim_counts(self):
+        data = self.get_prim_counts()
+        plt.bar(data.keys(), data.values())
+        plt.xticks(rotation=45, ha='right')
+        plt.ylabel("Call Count")
+        plt.title(self.get_cog_name() + " Primitive Function Usage")
+        plt.tight_layout()
+        plt.show()
+
+    def plot_total_prim_counts(self):
+        data = self.get_total_prim_counts()
+        plt.bar(data.keys(), data.values())
+        plt.xticks(rotation=45, ha='right')
+        plt.ylabel("Call Count")
+        plt.title("Total Primitive Function Usage")
+        plt.tight_layout()
+        plt.show()
+
+    def plot_cog_vs_prim(self):
+        import matplotlib.pyplot as plt
+        import matplotlib.cm as cm
+        import matplotlib.colors as mcolors
+
+        prim_names = list(self.call_counts.keys())
+
+        valid_cog_fns = {"iterate", "palindrome", "alternate", "chaining", "seriate", "serial_crossed", "center_embedded", "tail_recursive"}
+        cog_names = [cog for cog in self.cog_func_calls if cog in valid_cog_fns and len(self.cog_func_calls[cog]) > 0]
+
+        averaged_data = []
+        cog_labels = []
+        for cog in cog_names:
+            call_count = len(self.cog_func_calls[cog])
+            cog_labels.append(f"{cog} ({call_count}x)")
+
+            summed = defaultdict(int)
+            for d in self.cog_func_calls[cog]:
+                for k in d:
+                    summed[k] += d[k]
+            avg = {k: summed[k] / call_count for k in prim_names}
+            averaged_data.append(avg)
+
+        color_map = cm.get_cmap('tab20', len(prim_names))
+        colors = {prim: color_map(i) for i, prim in enumerate(prim_names)}
+
+        bottom = np.zeros(len(cog_labels))
+        for prim in prim_names:
+            heights = [d[prim] for d in averaged_data]
+            plt.bar(cog_labels, heights, bottom=bottom, label=prim, color=colors[prim])
+            bottom += heights
+
+        plt.xticks(rotation=45, ha='right')
+        plt.ylabel("Total Primitive Calls")
+        plt.title("All Cognitive Function Calls with Primitive Usage Breakdown")
+        plt.legend(title="Primitive Functions", bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+        plt.show()

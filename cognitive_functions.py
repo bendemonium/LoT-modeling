@@ -104,6 +104,61 @@ def seriate(S: ElementSet):
     pass
 
 def serial_crossed(S: ElementSet):
+    n = len(S.elements) // 2 # number of elements in the basis
+    stopwatch = Stopwatch()
+    bias = find_bias(S.elements, stopwatch, higher_dim=True)
+    result = []
+    while len(S.elements) > n:
+        element = pf.sample(S.elements)
+        if len(result) == 0 or pf.check_if_same_type(element, result[-1], bias[0]):
+            pf.pair(result, element)
+            pf.setminus(S.elements, element)
+    for _ in range(n):
+        element = pf.write_random(S.elements, bias[1], getattr(result[_], bias[1]))
+        pf.pair(result, element)
+        pf.setminus(S.elements, element)
+    time_elapsed = stopwatch.get_elapsed_time()
+    return (result, time_elapsed)
+
+def center_embedded(S: ElementSet):
+    n = len(S.elements) // 2 # number of elements in the basis
+    # 
+    stopwatch = Stopwatch()
+    bias = find_bias(S.elements, stopwatch, higher_dim=True)
+    result = []
+    while len(S.elements) > 0:
+        element = pf.sample(S.elements)
+        if len(result) == 0 or pf.check_if_same_type(element, result[-1], bias[0]):
+            pf.pair(result, element)
+            pf.setminus(S.elements, element)
+        if len(result) == n:
+            break
+    for _ in range(n):
+        element = pf.write_random(S.elements, bias[1], getattr(result[n - 1 - _], bias[1]))
+        pf.pair(result, element)
+        pf.setminus(S.elements, element)
+    stopwatch.stop()
+    time_elapsed = stopwatch.get_elapsed_time()
+    return (result, time_elapsed)
+
+def tail_recursive(S: ElementSet):
+    stopwatch = Stopwatch()
+    bias = find_bias(S.elements, stopwatch, two_flag=True, higher_dim=True)
+    stopwatch.start()
+    result = []
+    while len(S.elements) > 0:
+        element = pf.sample(S.elements)
+        pf.setminus(S.elements, element)
+        paired_element = pf.write_random(S.elements, bias[0], getattr(element, bias[0]))
+        result = pf.append(result, pf.merge(element, paired_element))
+        pf.setminus(S.elements, paired_element)
+    stopwatch.stop()
+    time_elapsed = stopwatch.get_elapsed_time()
+    return (result, time_elapsed)
+
+'''
+
+def serial_crossed(S: ElementSet):
     n = len(S.elements) // 2
     stopwatch = Stopwatch()
     bias = find_bias(S, stopwatch, higher_dim=True)
@@ -169,8 +224,10 @@ def tail_recursive(S: ElementSet):
     stopwatch.stop()
     return (result, stopwatch.get_elapsed_time())
 
+'''
+
 def find_bias(S, clock, two_flag=False, higher_dim=False):
-    if isinstance(S, ElementSet):
+    if hasattr(S, 'elements'):
         elements = S.elements
     else:
         elements = S
