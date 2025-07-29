@@ -219,7 +219,7 @@ class KComplexity:
         plt.bar(data.keys(), data.values())
         plt.xticks(rotation=45, ha='right')
         plt.ylabel("Call Count")
-        plt.title(self.get_cog_name() + " Primitive Function Usage")
+        plt.title(self.get_cog_name() + " Primitive Function Usage" + " (" + str(self.get_k_complexity()) + " calls)")
         plt.tight_layout()
         plt.show()
 
@@ -228,7 +228,7 @@ class KComplexity:
         plt.bar(data.keys(), data.values())
         plt.xticks(rotation=45, ha='right')
         plt.ylabel("Call Count")
-        plt.title("Total Primitive Function Usage")
+        plt.title("Total Primitive Function Usage" + " (" + str(self.get_total_k_complexity()) + " total calls)")
         plt.tight_layout()
         plt.show()
 
@@ -252,8 +252,9 @@ class KComplexity:
             for d in self.cog_func_calls[cog]:
                 for k in d:
                     summed[k] += d[k]
-            avg = {k: summed[k] / call_count for k in prim_names}
-            averaged_data.append(avg)
+            summed_data = {k: summed[k] for k in prim_names}
+            averaged_data.append(summed_data)
+
 
         color_map = cm.get_cmap('tab20', len(prim_names))
         colors = {prim: color_map(i) for i, prim in enumerate(prim_names)}
@@ -266,7 +267,43 @@ class KComplexity:
 
         plt.xticks(rotation=45, ha='right')
         plt.ylabel("Total Primitive Calls")
-        plt.title("All Cognitive Function Calls with Primitive Usage Breakdown")
+        plt.title("All Cognitive Function Calls with Primitive Usage Breakdown" + " (" + str(self.get_total_k_complexity()) + " total primitive calls)")
         plt.legend(title="Primitive Functions", bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
         plt.show()
+
+    def show_cog_prim_table(self):
+        from IPython.display import display
+        import pandas as pd
+
+        prim_names = list(self.call_counts.keys())
+        valid_cog_fns = {"iterate", "palindrome", "alternate", "chaining", "seriate", "serial_crossed", "center_embedded", "tail_recursive"}
+        
+        table_data = {}
+        row_labels = []
+
+        for cog in self.cog_func_calls:
+            if cog not in valid_cog_fns or len(self.cog_func_calls[cog]) == 0:
+                continue
+
+            call_count = len(self.cog_func_calls[cog])
+            label = f"{cog} ({call_count}x)"
+            row_labels.append(label)
+
+            summed = defaultdict(int)
+            for d in self.cog_func_calls[cog]:
+                for k in d:
+                    summed[k] += d[k]
+            
+            row = [summed.get(pf, 0) for pf in prim_names]
+            table_data[label] = row
+
+        df = pd.DataFrame.from_dict(table_data, orient='index', columns=prim_names)
+        total_row = df.sum(numeric_only=True)
+        total_row.name = "Total Counts for each Primitive Function"
+        df = pd.concat([df, pd.DataFrame([total_row])])
+        df["Total"] = df.sum(axis=1)
+        df.index.name = "Cognitive Function (calls)"
+
+        display(df)
+
