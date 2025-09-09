@@ -28,16 +28,16 @@ def flip(p):
 #     Time complexity: O(len(set1) + len(set2))"""
 #     return set1 | set2
 
+
 def setminus(set1, s):
-    """Remove a string from a set
-    Time complexity: O(1) for single item, O(len(s)) for set s"""
+    #Remove a string from a set
+    #Time complexity: O(1) for single item, O(len(s)) for set s
     set1.remove(s)
 
 def sample(collection):
-    """Sample from a set or list of strings.
-    Time complexity: O(1) for non-empty sets if using random.choice,
-    O(n) for lists using random.sample.
-    """
+    #Sample from a set or list of strings.
+    #Time complexity: O(1) for non-empty sets if using random.choice,
+    #O(n) for lists using random.sample.
     if not collection:
         return None
     
@@ -45,6 +45,7 @@ def sample(collection):
         collection = tuple(collection)  # Convert to tuple for sampling
 
     return random.sample(collection, 1)[0]
+
 
 # # Function calls with memoization
 
@@ -88,13 +89,15 @@ def check_if_same_type(e1, e2, bias):
     Time complexity: O(1)"""
     return getattr(e1,bias) == getattr(e2,bias)
 
-def write_random(G, bias, type): 
-    """Returns one unused member of particular type
-    Time complexity: O(n) to filter tokens"""
-    # for element in S:
-    #     if getattr(element, bias) == type:
-    #         return element
-    type_elements = [u for u, v, d in G.edges(data=True) if v == type and d["label"] == bias]
+
+
+def write_random(S, bias, type): 
+    #Returns one unused member of particular type
+    #Time complexity: O(n) to filter tokens
+    for element in S:
+        if getattr(element, bias) == type:
+            return element
+    #type_elements = [u for u, v, d in G.edges(data=True) if v == type and d["label"] == bias]
        
         ### WRITE CODE
         ### maybe add a random list shuffling thing here
@@ -102,6 +105,8 @@ def write_random(G, bias, type):
     
     pass
 
+
+    
 def implement(FUN, N):
     """Keeps implementing a function N times
     Time complexity: O(N * T) where T is time of FUN"""
