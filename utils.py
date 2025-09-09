@@ -10,11 +10,11 @@ import primitive_fucntions as pf
 
 # ---------------------------------------------------------------------#
 
-@dataclass
 class Element: # n-dimensional element
-    name : str
-    attribute1 : int | float | str
-    attribute2 : int | float | str | None = None
+    def __init__(self, name, attribute1, attribute2=None):
+        self.name = name
+        self.attribute1 = attribute1
+        self.attribute2 = attribute2
     def __repr__(self): 
         return f"Element(object={self.name}, attribute 1={self.attribute1}, attribute 2={self.attribute2})"
     def __str__(self):
@@ -34,6 +34,8 @@ class  Associations: # n-dimensional association
             for key, value in self.associations.items():
                 graph.add_edge(key.name, value.name, label="precedes", directed=True)
 
+
+'''
 class ElementSet: # n-dimensional element set
     def __init__(self, elements: set, associations: Associations = None):
         self.elements = elements
@@ -87,8 +89,9 @@ class ElementSet: # n-dimensional element set
             
             return getattr(self, f"{attribute}_types", set())
 
-    
-    
+
+
+'''
 
 
 def pretty_view(sequence):
@@ -133,3 +136,41 @@ class Stopwatch:
         if self._running:
             return time.perf_counter() - self._start_time
         return self._elapsed_time
+
+class SpaceComplexity:
+    """
+    Tracks space complexity for temporary variables in cognitive functions.
+    Use startcounttemp(x) to add x units, subtemp(x) to subtract x units.
+    get_max() returns the maximum count reached.
+    """
+    def __init__(self):
+        self.count = 0
+        self.max = 0
+    def startcounttemp(self):
+        self.count += 1
+        if self.count > self.max:
+            self.max = self.count
+    def subtemp(self):
+        self.count -= 1
+    def get_max(self):
+        return self.max
+    def reset(self):
+        self.count = 0
+        self.max = 0
+
+class ElementSet: # n-dimensional element set
+    def __init__(self, elements: set, associations: Associations = None):
+        self.elements = elements
+        self.associations = associations
+    def __repr__(self):
+        raise NotImplementedError
+    def attribute1_types(self):
+        """Returns a set of unique attribute1 types."""
+        return set(obj.attribute1 for obj in self.elements)
+    def attribute2_types(self):
+        """Returns a set of unique attribute2 types."""
+        return set(obj.attribute2 for obj in self.elements if obj.attribute2 is not None)
+    def attribute_items(self, attribute):
+        def get_type(type_):
+            
+            return getattr(self, f"{attribute}_types", set())
