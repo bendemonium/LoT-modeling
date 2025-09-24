@@ -10,11 +10,21 @@ import primitive_fucntions as pf
 
 # ---------------------------------------------------------------------#
 
-@dataclass
+# @dataclass
+# class Element: # n-dimensional element
+#     name : str
+#     attribute1 : int | float | str
+#     attribute2 : int | float | str | None = None
+#     def __repr__(self): 
+#         return f"Element(object={self.name}, attribute 1={self.attribute1}, attribute 2={self.attribute2})"
+#     def __str__(self):
+#         return f"{self.name}, {self.attribute1}, {self.attribute2})"
+
 class Element: # n-dimensional element
-    name : str
-    attribute1 : int | float | str
-    attribute2 : int | float | str | None = None
+    def __init__(self, name: str, attribute1: int | float | str, attribute2: int | float | str | None = None):
+        self.name = name
+        self.attribute1 = attribute1
+        self.attribute2 = attribute2
     def __repr__(self): 
         return f"Element(object={self.name}, attribute 1={self.attribute1}, attribute 2={self.attribute2})"
     def __str__(self):
@@ -36,7 +46,7 @@ class  Associations: # n-dimensional association
 
 class ElementSet: # n-dimensional element set
     def __init__(self, elements: set, associations: Associations = None):
-        self.elements = elements
+        self.elements = elements 
         self.associations = associations
         self.graph = self.build_graph()
     def __repr__(self):
@@ -46,15 +56,15 @@ class ElementSet: # n-dimensional element set
         for obj in self.elements:
             G.add_node(obj.name, type='element')  # Add object as a node
             G.add_node(obj.attribute1, type='attribute1')  # Add color as a node
-            G.add_edge(obj.name, obj.attribute1, label="attribute")  # Add directed edge with label
+            G.add_edge(obj.name, obj.attribute1, label="attribute1")  # Add directed edge with label
             if obj.attribute2:
                 # If the object has a second attribute, add it as a node and edge
                 G.add_node(obj.attribute2, type='attribute2')  # Add shape as a node
                 G.add_edge(obj.name, obj.attribute2, label="attribute")
         if  self.associations:
             self.associations.build_updates(G)  # Build associations
-        if self.graph:
-            self.graph = G
+            if self.graph:
+                self.graph = G
         return G
     def visualize(self):
         plt.figure(figsize=(10, 8))
@@ -133,3 +143,25 @@ class Stopwatch:
         if self._running:
             return time.perf_counter() - self._start_time
         return self._elapsed_time
+
+class K_complexity:
+    def __init__(self, k: int):
+        self.k = k
+
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            if len(args) < self.k:
+                raise ValueError(f"Function requires at least {self.k} arguments.")
+            return func(*args, **kwargs)
+        return wrapper
+    
+class SpaceComp:
+    def __init__(self, space: int):
+        self.space = space
+
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            if len(args) > self.space:
+                raise ValueError(f"Function requires at most {self.space} arguments.")
+            return func(*args, **kwargs)
+        return wrapper

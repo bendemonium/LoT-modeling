@@ -1,11 +1,48 @@
-import primitive_fucntions as pf
+import model.primitive_fucntions as pf
 from collections import defaultdict
 from utils import Stopwatch, Element, ElementSet, Associations
- 
+
+
+# NON-DIMENSIONAL
+
+def chaining(S, associations: dict): # associative chaining
+    # preprocessing (not part of measured cognitive process)
+    n = len(S) # number of elements in the set
+    stopwatch = Stopwatch()
+    # --- #
+    stopwatch.start()
+    chunks = []
+    result = []
+    while (len(S) > 0):
+        element = pf.sample(S)
+        if element in associations.keys():
+            chunk = []
+            pf.pair(chunk, element)
+            pf.setminus(S, element)
+            while True:
+                next_element = pf.sample(S)
+                if next_element == associations[element]:
+                    pf.pair(chunk, next_element)
+                    pf.setminus(S, next_element)
+                    pf.pair(chunks, chunk)
+                    break
+                else:
+                    continue
+        else:
+            continue
+    stopwatch.stop()
+    time_elapsed = stopwatch.get_elapsed_time()
+
+    return  (result, time_elapsed)
+
+def ordinal(S, ordinality):
+    n = len(S)
+
+pf.find(type1=yellow, type2=circle, association = b2) 
+
 # 1-D
 
-def iterate(S: ElementSet):     # 112233    
-
+def iterate(S: ElementSet):     # 112233    # CHUNKING
     # preprocessing (not part of measured cognitive process)
     n = len(S.elements) # number of elements in the set
     chunks = defaultdict(list) 
@@ -25,11 +62,11 @@ def iterate(S: ElementSet):     # 112233
     # """ non graph algo here"""
     bias = find_bias(S, stopwatch)
     stopwatch.start()
-    for _ in range(n):
-        element = pf.sample(S) # select an element in the set
-        sorter = getattr(element, bias)
-        chunks[sorter].append(element)
-        pf.setminus(S, element)
+    for _ in range(n): # 3 times  1
+        element = pf.sample(S) # select an element in the set 1
+        sorter = getattr(element, bias) 
+        chunks[sorter].append(element) 
+        pf.setminus(S, element) # 2
     stopwatch.stop()
     n = len(chunks) # reassign n
     chunks = {tuple(v) for k, v in chunks.items()}
@@ -71,7 +108,7 @@ def palindrome(S):
     stopwatch.stop()
     time_elapsed = stopwatch.get_elapsed_time()
     
-    return (result, time_elapsed)      
+    return (result, time_elapsed)   
 
 def alternate(S):
     # 121212
@@ -95,43 +132,13 @@ def alternate(S):
 
     return (result, time_elapsed)
 
-def chaining(S, associations: dict):
-    # preprocessing (not part of measured cognitive process)
-    n = len(S) # number of elements in the set
-    stopwatch = Stopwatch()
-    # --- #
-    stopwatch.start()
-    chunks = []
-    result = []
-    while (len(S) > 0):
-        element = pf.sample(S)
-        if element in associations.keys():
-            chunk = []
-            pf.pair(chunk, element)
-            pf.setminus(S, element)
-            while True:
-                next_element = pf.sample(S)
-                if next_element == associations[element]:
-                    pf.pair(chunk, next_element)
-                    pf.setminus(S, next_element)
-                    pf.pair(chunks, chunk)
-                    break
-                else:
-                    continue
-        else:
-            continue
-    stopwatch.stop()
-    time_elapsed = stopwatch.get_elapsed_time()
-
-    return  (result, time_elapsed)
-
 def seriate(S):
     #  123123
     pass
 
 # -------- 2-D -------- #
 
-def serial_crossed(S):
+def serial_crossed(S): # ({[)}]
     n = len(S) // 2 # number of elements in the basis
     stopwatch = Stopwatch()
     bias = find_bias(S, stopwatch, higher_dim=True)
@@ -148,9 +155,9 @@ def serial_crossed(S):
     time_elapsed = stopwatch.get_elapsed_time()
     return (result, time_elapsed)
 
-def center_embedded(S):
+def center_embedded(S): # ({[]})
     n = len(S) // 2 # number of elements in the basis
-    # 
+
     stopwatch = Stopwatch()
     bias = find_bias(S, stopwatch, higher_dim=True)
     result = []
@@ -167,7 +174,7 @@ def center_embedded(S):
     time_elapsed = stopwatch.get_elapsed_time()
     return (result, time_elapsed)
 
-def tail_recursive(S):
+def tail_recursive(S): # (){}[]
     stopwatch = Stopwatch()
     bias = find_bias(S, stopwatch, two_flag=True, higher_dim=True)
     stopwatch.start()
