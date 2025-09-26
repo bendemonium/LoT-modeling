@@ -88,10 +88,10 @@ def find(lexicon, token = None, criterion = None, *, negative = False, move = Fa
         else:
             type_needed = criterion
     if negative:
-        found_elements = [u for u, v, d in lexicon.edges(data=True) if v != type_needed and d["label"] == bias]
+        found_elements = [u for u, v, d in lexicon.edges(data=True) if v != type_needed and d["label"] == criterion]
         weight = 1
     else:
-        found_elements = [u for u, v, d in lexicon.edges(data=True) if v == type_needed and d["label"] == bias]
+        found_elements = [u for u, v, d in lexicon.edges(data=True) if v == type_needed and d["label"] == criterion]
     weight += len(found_elements)
     sub_lex = {}
     for token in lexicon.tokens:
@@ -121,6 +121,7 @@ def write_random(lexicon, token = None, bias = None, memory = None, criterion = 
     write = sample(collection.elements, 1)
     add(memory, write)
     remove(lexicon, write)
+    weight = 0 if len(collection.elements)==1 else 1
     return None, weight
 
 @primitive_function
