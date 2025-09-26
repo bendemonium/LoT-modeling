@@ -7,7 +7,7 @@ class wm():
         wm.cache.append(wm.value)
     @property
     def max_space(self):
-        return max(wm_cache)
+        return max(wm.cache)
 
 def calculate_theoretical_complexity(algorithm, n, divs = None):
     kolmo = 0

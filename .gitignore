@@ -1,5 +1,7 @@
-.virtual_documents
-__pycache__
-dumpyard.ipynb
-.ipynb_checkpoints
 .env
+**__pycache__/
+**.ipynb_checkpoints/
+.vscode/
+.DS_Stores/
+lot_venv/
+latex_cogsci_fullpaper/
