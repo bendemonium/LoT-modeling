@@ -4,6 +4,7 @@ import weakref
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Iterable, Set, List, Dict, Union
+from collections import deque
 import networkx as nx
 from copy import deepcopy
 
@@ -38,10 +39,10 @@ class MemoryStructure:
         if hasattr(self, "__slots__"):
             for slot in self.__slots__:
                 if hasattr(self, slot):
-                    setattr(new_obj, slot, copy.deepcopy(getattr(self, slot), memo))
+                    setattr(new_obj, slot, deepcopy(getattr(self, slot), memo))
         else:
             for k, v in self.__dict__.items():
-                setattr(new_obj, k, copy.deepcopy(v, memo))
+                setattr(new_obj, k, deepcopy(v, memo))
 
         # Re-register the new object if tracking is enabled
         if getattr(self, "_track", True):
@@ -114,7 +115,7 @@ class Token(MemoryStructure):
         return f"Token({self.name!r}, linked={self.linked}, ord={self.ordinate})"
 
     def __bool__(self):
-        return True if seld.tokens else False
+        return True if self.tokens else False
 
     def compute_weight(self):
         weight_params = [self.attribute1, self.attribute2, self.predecessors, self.successors, self.ordinate]
@@ -122,7 +123,7 @@ class Token(MemoryStructure):
         
     
 class Lexicon(MemoryStructure):
-    __slots__ = ("tokens", "_G", "dimension", "linked")
+    __slots__ = ("tokens", "_G", "dimension", "linked", "ordered")
 
     def __init__(self, tokens = None, *, 
                 linked = False, ordered = False, **kwargs):
@@ -130,7 +131,6 @@ class Lexicon(MemoryStructure):
         self.linked = linked
         self.ordered = ordered
         self.G: nx.DiGraph = self._build_graph()
-        self.ordinates = 
         super().__init__(**kwargs)
     
     def __iter__(self):
@@ -141,34 +141,34 @@ class Lexicon(MemoryStructure):
 
     ## maybe build a bool dunder function
 
-    def _token_vet(token):
-            G.add_node(token.name, type='token')  
-            if t.attribute1:
-                G.add_node(token.attribute1, type='attribute1') 
-                G.add_edge(token.name, token.attribute1)  
-            if t.attribute2:
-                G.add_node(token.attribute2, type='attribute2') 
-                G.add_edge(token.name, token.attribute2)
-            if t.ordinate:
-                G.add_node(token.ordinate, type='ordinate') 
-                G.add_edge(token.ordinate, token.name)
+    def _token_vet(self, token):
+        self.G.add_node(token.name, type='token')  
+        if token.attribute1:
+            self.G.add_node(token.attribute1, type='attribute1') 
+            self.G.add_edge(token.name, token.attribute1)  
+        if token.attribute2:
+            self.G.add_node(token.attribute2, type='attribute2') 
+            self.G.add_edge(token.name, token.attribute2)
+        if token.ordinate:
+            self.G.add_node(token.ordinate, type='ordinate') 
+            self.G.add_edge(token.ordinate, token.name)
 
     def _build_graph(self) -> nx.DiGraph:
         G = nx.MultiDiGraph()
         for t in self.tokens:
-            _token_vet(t)
-        if linked:
+            self._token_vet(t)
+        if t.linked:
             for t in self.tokens:
-                if predecessors:
-                    for p in predecessors:
+                if t.predecessors:
+                    for p in t.predecessors:
                         G.add_edge(p.name, t.name, label = "linked")
-                if successors:
-                    for s in successors:
+                if t.successors:
+                    for s in t.successors:
                         G.add_edge(t.name, s.name, label = "linked")
-        if ordered:
+        if self.ordered:
             ordinates = [n for n, data in G.nodes(data=True) if data.get("type") == "ordinate"]
             ordinates = sorted(ordinates)
-            for u, v in zip(sorted_nodes, sorted_nodes[1:]):
+            for u, v in zip(ordinates, ordinates[1:]):
                 G.add_edge(u, v)
         return G
 
@@ -179,8 +179,8 @@ class Lexicon(MemoryStructure):
 
     def add_token(self, new_token):
         added = False
-        if t not in self.tokens:
-            self.tokens.add(t)
+        if new_token not in self.tokens:
+            self.tokens.add(new_token)
             added = True
         if added:
             self._G = self._build_graph()
@@ -188,15 +188,15 @@ class Lexicon(MemoryStructure):
 
     def remove_token(self, drop_token):
         removed = False
-        if t in self.tokens:
-            self.tokens.remove(t)
+        if drop_token in self.tokens:
+            self.tokens.remove(drop_token)
             removed = True
         if removed:
             self._G = self._build_graph()
             self._changed()
     
     def get_token(self, token):
-        token = next((t for t in lexicon.tokens if t.name == token), None)
+        token = next((t for t in self.tokens if t.name == token), None)
         if token:
             return token
         else:
@@ -223,13 +223,15 @@ class Lexicon(MemoryStructure):
                 out.append(data["token"])
         return out
     
-    if ordered:
+    if G.ordered:
         @property
-        def first(self):
-            ordinates = [
-                data["value"] for n, data in lexicon.G.nodes(data=True)
+        def ordinates(self): 
+            return [
+                data["value"] for n, data in self.G.nodes(data=True)
                 if data.get("type") == "ordinate"
             ]
+        def first(self):
+            ordinates = self.ordinates
             lowest = min(ordinates, default=None)
             return lowest
 
@@ -308,7 +310,7 @@ class List(MemoryStructure):
         self._changed()
     
     def clone(self, other):
-        self.items = deque(copy.deepcopy(list(other.items)))
+        self.items = deque(deepcopy(list(other.items)))
         self._changed()
 
 class Queue(MemoryStructure):
@@ -336,11 +338,11 @@ class Queue(MemoryStructure):
         self._changed()
     
     def clone(self, other):
-        self.items = deque(copy.deepcopy(list(other.items)))
+        self.items = deque(deepcopy(list(other.items)))
         self._changed()
 
 class Mode(MemoryStructure):
-        __slots__ = ("item",)
+    __slots__ = ("item",)
     def __init__(self, item=None, **kwargs):
         self.item = item
         super().__init__(**kwargs)
