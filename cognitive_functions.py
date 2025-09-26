@@ -1,10 +1,13 @@
 import model.primitive_fucntions as pf
+import model.memory as mem
+from model.complexity import Complexity, cognitive_function
 from collections import defaultdict
 from utils import Stopwatch, Element, ElementSet, Associations
 
 
 # NON-DIMENSIONAL
 
+@cognitive_function
 def chaining(S, associations: dict): # associative chaining
     # preprocessing (not part of measured cognitive process)
     n = len(S) # number of elements in the set
@@ -37,8 +40,6 @@ def chaining(S, associations: dict): # associative chaining
 
 def ordinal(S, ordinality):
     n = len(S)
-
-pf.find(type1=yellow, type2=circle, association = b2) 
 
 # 1-D
 

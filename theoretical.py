@@ -1,10 +1,10 @@
 class wm():
     def __init__(self):    
         wm.value = 0
-        wm_cache = []
+        wm.cache = []
     def update(self, value):
         wm.value += value
-        wm_cache.append(wm.value)
+        wm.cache.append(wm.value)
     @property
     def max_space(self):
         return max(wm_cache)
