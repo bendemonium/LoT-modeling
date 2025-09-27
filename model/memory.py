@@ -158,6 +158,9 @@ class Lexicon(MemoryStructure):
 
     def compute_weight(self) -> float:
         return float(len(self.tokens) + self._G.number_of_edges())
+
+    def __bool__(self):
+        return bool(self.tokens)
     
     def _token_vet(self, token, G):
         G.add_node(token.name, type='token')  
@@ -381,6 +384,20 @@ class Sequence:
 
     def __init__(self, items=None):
         self.items = deque(items) if items is not None else []
+
+    def __repr__(self):
+        if not self.items:
+            return "Sequence([])"
+        parts = []
+        for t in self.items:
+            # assume these are mem.Token objects
+            parts.append(
+                f"Token(name={t.name!r}, attr1={t.attribute1!r}, "
+                f"attr2={getattr(t, 'attribute2', None)!r}, "
+                f"linked={getattr(t, 'linked', None)!r}, "
+                f"ord={getattr(t, 'ordinate', None)!r})"
+            )
+        return "Sequence([" + ", ".join(parts) + "])"
 
     def click(self, value):
         self.items.append(value)

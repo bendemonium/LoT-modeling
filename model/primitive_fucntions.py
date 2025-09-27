@@ -50,7 +50,7 @@ def pick(a, b, p = 0.5):
     return choice, weight
 
 @primitive_function
-def sample(lexicon: mem.Lexicon) -> mem.Token:
+def sample(lexicon: mem.Lexicon):
     """Sample from a lexicon."""
     collection = list(lexicon.tokens)
     spit = random.choice(collection)
