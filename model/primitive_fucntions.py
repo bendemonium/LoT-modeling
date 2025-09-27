@@ -22,7 +22,7 @@ def primitive_function(pf):
     return pf_ize
 
 @primitive_function
-def add(L, token):
+def add(L: mem.Lexicon | mem.Queue | mem.Sequence | mem.List, token):
     """adds a token to a list, or pushes it into a queue"""
     if isinstance(L, mem.List):
         L.suffix(token)
@@ -30,6 +30,8 @@ def add(L, token):
         L.click(token)
     if isinstance(L, mem.Queue):
         L.push_in(token)
+    if isinstance(L, mem.Lexicon):
+        L.add_token(token)
     weight = 1
     return None, weight
 
@@ -48,27 +50,30 @@ def pick(a, b, p = 0.5):
     return choice, weight
 
 @primitive_function
-def sample(lexicon):
+def sample(lexicon: mem.Lexicon) -> mem.Token:
     """Sample from a lexicon."""
-    collection = lexicon.tokens
-    spit = deepcopy(random.sample(collection, 1)[0])
+    collection = list(lexicon.tokens)
+    spit = random.choice(collection)
     weight = 0 if len(lexicon.tokens)==1 else 1
     return spit, weight
 
 @primitive_function
-def remove(lexicon, T):
+def remove(lexicon: mem.Lexicon, T: mem.Token | mem.Lexicon):
     """Removes token from a lexicon"""
+    weight = 0
     if isinstance(T, mem.Lexicon):
         for t in T.tokens:
-            remove(lexicon,t)
-    lexicon.remove_token(T)
-    weight = 1
+            lexicon.remove_token(t)
+            weight += 1
+    else:
+        lexicon.remove_token(T)
+        weight += 1 
     return None, weight
 
 @primitive_function
-def inquire_token(token, bias, lexicon = None):
+def inquire_token(token: mem.Token, bias, lexicon: mem.Lexicon | None = None):
     if bias == 'link':
-        if lexicon.in_edges(token.name):
+        if lexicon.G.in_edges(token.name):
             value = 'in'
         else:
             value = 'out'
@@ -78,7 +83,7 @@ def inquire_token(token, bias, lexicon = None):
     return value, weight
 
 @primitive_function
-def find(lexicon, token = None, criterion = None, *, negative = False, move = False):      
+def find(lexicon: mem.Lexicon, token = None, criterion = None, *, negative = False, move = False):      
     if lexicon.linked == True:
         if criterion == 'in':
             pass
@@ -87,17 +92,21 @@ def find(lexicon, token = None, criterion = None, *, negative = False, move = Fa
             type_needed = inquire_token(token, criterion)
         else:
             type_needed = criterion
+        found_elements = []
     if negative:
-        found_elements = [u for u, v, d in lexicon.edges(data=True) if v != type_needed and d["label"] == criterion]
+        for u, v in lexicon.G.edges():
+            if lexicon.G.nodes[v].get("type") == criterion and v != type_needed and lexicon.G.nodes[u].get("type") == 'token':
+                found_elements.append(u)
         weight = 1
     else:
-        found_elements = [u for u, v, d in lexicon.edges(data=True) if v == type_needed and d["label"] == criterion]
-    weight += len(found_elements)
-    sub_lex = {}
+        for u, v in lexicon.G.edges():
+            if v == type_needed and lexicon.G.nodes[u].get("type") == 'token':
+                found_elements.append(u)
+        weight = 0
+    sub_lex = mem.Lexicon()
     for token in lexicon.tokens:
         if token.name in found_elements:
-            sub_lex.add(token)
-    sub_lex = mem.Lexicon(sub_lex)
+            add(sub_lex, token)
     if move:
         remove(lexicon, sub_lex)
     return sub_lex, weight
@@ -106,10 +115,10 @@ def find(lexicon, token = None, criterion = None, *, negative = False, move = Fa
 @primitive_function
 def check_similarity(e1, e2, bias):
     """Returns True if tokens are same type"""
-    return getattr(e1,bias) == getattr(e2,bias)
+    return getattr(e1,bias) == getattr(e2,bias), 1
 
 @primitive_function
-def write_random(lexicon, token = None, bias = None, memory = None, criterion = None, found = False): 
+def write_random(lexicon: mem.Lexicon, token = None, bias = None, memory = None, criterion = None, found = False): 
     """Returns one unused member of particular type"""
     if found:
         collection = lexicon
@@ -118,17 +127,17 @@ def write_random(lexicon, token = None, bias = None, memory = None, criterion = 
             collection = find(lexicon, criterion)
         else:
             collection = find(lexicon, bias, token)
-    write = sample(collection.elements, 1)
+    write = sample(collection)
     add(memory, write)
     remove(lexicon, write)
-    weight = 0 if len(collection.elements)==1 else 1
+    weight = 0 if len(collection.tokens)==1 else 1
     return None, weight
 
 @primitive_function
 def write_all(lexicon, token, bias, memory):
     """Returns a sequential list of all tokens of a type"""
     sub_lex = find(lexicon, token, bias, move = True)
-    while (sub_lex.nodes):
+    while (sub_lex.tokens):
         write_random(sub_lex, token = token, bias = bias, memory = memory, found = True)
     weight = 0
     return None, weight
@@ -139,7 +148,7 @@ def loop():
     return None, weight
 
 @primitive_function
-def push_out(q):
-    token = q.push_out
+def push_out(q: mem.Queue):
+    token = q.push_out()
     weight = 2
     return token, weight

@@ -1,7 +1,6 @@
-
+from __future__ import annotations
 from contextvars import ContextVar
 import weakref
-from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Iterable, Set, List, Dict, Union
 from collections import deque
@@ -15,7 +14,7 @@ class MemoryStructure:
     Base class for memory-tracked objects.
     Set track=False to opt out of automatic Space bookkeeping.
     """
-    __slots__ = ("_finalizer", "_track")
+    __slots__ = ("_finalizer", "_track", "__weakref__")
 
     def __init__(self, *, track: bool = True):
         self._track = bool(track)
@@ -87,7 +86,7 @@ class Token(MemoryStructure):
     """
     __slots__ = (
         "name", "attribute1", "attribute2",
-        "predecessors", "successors", "ordinate"
+        "predecessors", "successors", "ordinate", "linked"
     )
 
     def __init__(
@@ -107,21 +106,42 @@ class Token(MemoryStructure):
         self.predecessors: Set[Token] = set(predecessors or [])
         self.successors: Set[Token] = set(successors or [])
         self.ordinate = float(ordinate) if ordinate is not None else None
-        if self.predecessors or self.succesors:
-            self.linked = True
-        super().__init__()(**kwargs)
+        self.linked = bool(self.predecessors or self.successors)
+        super().__init__(**kwargs)
 
     def __repr__(self):
         return f"Token({self.name!r}, linked={self.linked}, ord={self.ordinate})"
 
-    def __bool__(self):
-        return True if self.tokens else False
+    def __hash__(self):
+        # Only immutable values can go into a hash. Convert lists to tuples of names.
+        return hash(
+            (
+                self.name,
+                self.linked,
+                self.ordinate,
+                self.attribute1,
+                self.attribute2,
+                tuple(t.name for t in self.predecessors),
+                tuple(t.name for t in self.successors),
+            )
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, Token):
+            return False
+        return (
+            self.name == other.name
+            and self.linked == other.linked
+            and self.ordinate == other.ordinate
+            and self.attribute1 == other.attribute1
+            and self.attribute2 == other.attribute2
+        )
 
     def compute_weight(self):
         weight_params = [self.attribute1, self.attribute2, self.predecessors, self.successors, self.ordinate]
         weight =  sum(1 for v in weight_params if v is not None)
-        
-    
+        return weight
+
 class Lexicon(MemoryStructure):
     __slots__ = ("tokens", "_G", "dimension", "linked", "ordered")
 
@@ -130,34 +150,32 @@ class Lexicon(MemoryStructure):
         self.tokens: Set[Token] = set(tokens or [])
         self.linked = linked
         self.ordered = ordered
-        self.G: nx.DiGraph = self._build_graph()
+        self._G = self._build_graph()
         super().__init__(**kwargs)
     
     def __iter__(self):
-        return self.tokens
+        return iter(self.tokens)
 
     def compute_weight(self) -> float:
         return float(len(self.tokens) + self._G.number_of_edges())
-
-    ## maybe build a bool dunder function
-
-    def _token_vet(self, token):
-        self.G.add_node(token.name, type='token')  
+    
+    def _token_vet(self, token, G):
+        G.add_node(token.name, type='token')  
         if token.attribute1:
-            self.G.add_node(token.attribute1, type='attribute1') 
-            self.G.add_edge(token.name, token.attribute1)  
+            G.add_node(token.attribute1, type='attribute1') 
+            G.add_edge(token.name, token.attribute1)  
         if token.attribute2:
-            self.G.add_node(token.attribute2, type='attribute2') 
-            self.G.add_edge(token.name, token.attribute2)
+            G.add_node(token.attribute2, type='attribute2') 
+            G.add_edge(token.name, token.attribute2)
         if token.ordinate:
-            self.G.add_node(token.ordinate, type='ordinate') 
-            self.G.add_edge(token.ordinate, token.name)
+            G.add_node(token.ordinate, type='ordinate') 
+            G.add_edge(token.ordinate, token.name)
 
     def _build_graph(self) -> nx.DiGraph:
         G = nx.MultiDiGraph()
         for t in self.tokens:
-            self._token_vet(t)
-        if t.linked:
+            self._token_vet(t, G)
+        if any(t.linked for t in self.tokens):
             for t in self.tokens:
                 if t.predecessors:
                     for p in t.predecessors:
@@ -223,14 +241,20 @@ class Lexicon(MemoryStructure):
                 out.append(data["token"])
         return out
     
-    if G.ordered:
-        @property
-        def ordinates(self): 
+    @property
+    def ordinates(self): 
+        if not self.ordered:
             return [
                 data["value"] for n, data in self.G.nodes(data=True)
                 if data.get("type") == "ordinate"
             ]
-        def first(self):
+        else:   
+            return None
+    @property
+    def first(self):
+        if not self.ordered:
+            return None
+        else:   
             ordinates = self.ordinates
             lowest = min(ordinates, default=None)
             return lowest
@@ -363,10 +387,8 @@ class Sequence:
 
 class Pointer(MemoryStructure):
     """The final sequence, not tracked in Space"""
-    __slots__ = ("node")
+    __slots__ = ("node",)
 
-    def __init__(self, items=None):
-        self.items = deque(items) if items is not None else []
-
-    def click(self, value):
-        self.items.append(value)
+    def __init__(self, node=None, **kwargs):
+        self.node = node
+        super().__init__(**kwargs)
