@@ -15,9 +15,9 @@ H = mem.Token(name="H", attribute1="green")
 
 # LEXICONS
 
-lex1 = mem.Lexicon(tokens={A,B,D,E})
-lex2 = mem.Lexicon(tokens={A,B,C,D,E,F})   
-lex3 = mem.Lexicon(tokens={A,B,D,E,G,H})
+# lex1 = mem.Lexicon(tokens={A,B,D,E}) 
+# lex2 = mem.Lexicon(tokens={A,B,C,D,E,F})   
+# lex3 = mem.Lexicon(tokens={A,B,D,E,G,H})
 
 # 2D
 
@@ -29,12 +29,15 @@ K = mem.Token(name="K", attribute1="red", attribute2="triangle")
 L = mem.Token(name="L", attribute1="blue", attribute2="circle")
 M = mem.Token(name="M", attribute1="blue", attribute2="square")
 N = mem.Token(name="N", attribute1="blue", attribute2="triangle")
+O = mem.Token(name="O", attribute1="green", attribute2="circle")
+P = mem.Token(name="P", attribute1="green", attribute2="square")
+Q = mem.Token(name="Q", attribute1="green", attribute2="triangle")
 
 # LEXICONS
 
-lex4 = mem.Lexicon(tokens={I,J,K,L,M,N})
-lex5 = mem.Lexicon(tokens={I,J,L,M})
-lex6 = mem.Lexicon(tokens={I,J,K,L,N})
+# lex4 = mem.Lexicon(tokens={I,J,L,M})
+# lex5 = mem.Lexicon(tokens={I,J,K,L,M,N})
+# lex6 = mem.Lexicon(tokens={I,J,L,M,O,P})
 
 
 

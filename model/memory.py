@@ -86,7 +86,8 @@ class Token(MemoryStructure):
     """
     __slots__ = (
         "name", "attribute1", "attribute2",
-        "predecessors", "successors", "ordinate", "linked"
+        "predecessors", "successors", "ordinate", "linked",
+        "_track",
     )
 
     def __init__(
@@ -345,11 +346,14 @@ class Queue(MemoryStructure):
     __slots__ = ("items",)
 
     def __init__(self, items=None, **kwargs):
-        self.items = deque(items) if items is not None else []
+        self.items = deque(items) if items is not None else deque()
         super().__init__(**kwargs)
 
     def compute_weight(self) -> float:
         return int(len(self.items))
+    
+    def __bool__(self):
+        return bool(self.items)
 
     def push_in(self, value):
         self.items.appendleft(value)
@@ -409,3 +413,16 @@ class Pointer(MemoryStructure):
     def __init__(self, node=None, **kwargs):
         self.node = node
         super().__init__(**kwargs)
+
+class Bigram(MemoryStructure):
+    """A bigram structure for tracking pairs of tokens."""
+    __slots__ = ("first", "second")
+
+    def __init__(self, first=None, second=None, **kwargs):
+        self.first = first
+        self.second = second
+        super().__init__(**kwargs)
+
+    def compute_weight(self) -> float:
+        weight = 2
+        return int(weight)

@@ -93,6 +93,10 @@ class Complexity:
     @property
     def cf_space(self) -> float:
         return max((r.space_complexity for r in self.runs), default=0.0)
+    
+    @property
+    def snapshots(self) -> list[RunSnapshot]:
+        return self.runs.copy()
 
 from functools import wraps
 from collections import deque

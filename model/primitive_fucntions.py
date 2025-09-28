@@ -88,6 +88,8 @@ def find(lexicon: mem.Lexicon, token = None, criterion = None, *, negative = Fal
         if criterion == 'in':
             pass
     else:
+        if isinstance(criterion, mem.Mode):
+            criterion = criterion.item
         if token:
             type_needed = inquire_token(token, criterion)
         else:
@@ -126,7 +128,7 @@ def write_random(lexicon: mem.Lexicon, token = None, bias = None, memory = None,
         if token == None:
             collection = find(lexicon, criterion)
         else:
-            collection = find(lexicon, bias, token)
+            collection = find(lexicon, token = token, criterion = bias)
     write = sample(collection)
     add(memory, write)
     remove(lexicon, write)
